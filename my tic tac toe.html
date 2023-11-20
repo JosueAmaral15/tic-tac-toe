@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Jogo da velha</title>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
+        <script type="importmap">
+            {
+                "imports" : {
+                    "react" : "https://esm.sh/react?dev",
+                    "react-dom/client" : "https://esm.sh/react-dom/client?dev"
+                }    
+            }
+        </script>
+        <script type="text/babel" data-type="module">
+            import React, {StrictMode} from 'react';
+            import {createRoot} from 'react-dom/client';
+            import {useState} from 'react';
+
+            function Square({content, onSquareClick}) {
+                return (
+                    <button onClick={onSquareClick}>{content}</button>
+                );
+            }
+
+            function Piece({content, count}) {
+                //let c = 0;
+                return (
+                    <div>
+                        <Square content={squares[3*count+1]} onSquareClick={() => {handleClick(3*count+1)}} />
+                        <Square content={squares[3*count+2]} onSquareClick={() => {handleClick(3*count+2)}} />
+                        <Square content={squares[3*count+3]} onSquareClick={() => {handleClick(3*count+3)}} />
+                    </div>
+                );
+            }
+
+            function Board() {
+                let count = 0;    
+                /*function calculateWinner() {
+                    lines = [
+                    [0,1,2], [3,4,5],[6,7,8],
+                    [0,3,6], [1,4,7], [2,5,8],
+                    [0,4,8], [2,4,6]
+                    ]
+                }*/
+                const [squares,setSquares] = useState(Array(9).fill(null));
+                function handleClick(i){
+                    //let winner = calculateWinner();
+                    let squareSet = squares.slice();
+                    squareSet[i] = "X";
+                    setSquares(squareSet);
+                }
+                return (
+                    /*<div className="table">
+                        {Array.from({length : 3}).map((_,index) => (
+                            <Piece className="piece" count={count++} />
+                        ))}
+                    </div>*/
+                    <>
+                        <div>
+                            <Square content={squares[0]} onSquareClick={() => {handleClick(0)}} />
+                            <Square content={squares[1]} onSquareClick={() => {handleClick(1)}} />
+                            <Square content={squares[2]} onSquareClick={() => {handleClick(2)}} />
+                        </div>
+                        <div>
+                            <Square content={squares[3]} onSquareClick={() => {handleClick(3)}} />
+                            <Square content={squares[4]} onSquareClick={() => {handleClick(4)}} />
+                            <Square content={squares[5]} onSquareClick={() => {handleClick(5)}} />
+                        </div>
+                        <div>
+                            <Square content={squares[6]} onSquareClick={() => {handleClick(6)}} />
+                            <Square content={squares[7]} onSquareClick={() => {handleClick(7)}} />
+                            <Square content={squares[8]} onSquareClick={() => {handleClick(8)}} />
+                        </div>
+                    </>
+                )
+            }
+
+            function App () {
+
+                return (
+                    <div className="main">
+                        <h1>Tic Tac Toe</h1>
+                        <Board className="board" />
+                        <p>Created by <a href="https://www.github.com/josueamaral15">Josué Amaral</a></p>
+                    </div>
+                )
+            }
+
+            const root = createRoot(document.getElementById('root'));
+            root.render (
+                <StrictMode>
+                    <App />
+                </StrictMode>
+            );
+        </script>
+        <style>
+            button {
+                width : 100px;
+                height : 100px;
+                font-size: 5rem;
+                text-align: center;
+                position:relative;
+                padding:0;
+                margin:0;
+                left:0;
+                top:0;
+                box-sizing: border-box;
+            }
+
+            h1{
+                margin-left:4rem;
+            }
+
+            p {
+                font-size: small;
+                font-weight: bold;
+                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                margin-left : 3rem;
+            }
+
+            .board > :not(:last-child) {
+                border-bottom: 1px solid black;
+            }
+
+            /*.main{
+                display:flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: aqua;
+            }*/
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+    </body>
+</html>
