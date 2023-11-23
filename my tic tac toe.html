@@ -4,6 +4,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Jogo da velha</title>
+        <link href='https://fonts.googleapis.com/css?family=Alex Brush' rel='stylesheet'>
+        <link href='https://fonts.googleapis.com/css?family=Alkatra' rel='stylesheet'>
         <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
         <script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
         <script type="importmap">
@@ -25,60 +27,48 @@
                 );
             }
 
-            /*function Piece({content, count}) {
-                //let c = 0;
-                return (
-                    <div>
-                        <Square content={squares[3*count+1]} onSquareClick={() => {handleClick(3*count+1)}} />
-                        <Square content={squares[3*count+2]} onSquareClick={() => {handleClick(3*count+2)}} />
-                        <Square content={squares[3*count+3]} onSquareClick={() => {handleClick(3*count+3)}} />
-                    </div>
-                );
-            }*/
+            function Board({squares, xIsNext, onPlay, current}) { 
 
-            function Board() { 
                 function calculateWinner() {
                     const lines = [
                     [0,1,2], [3,4,5],[6,7,8],
                     [0,3,6], [1,4,7], [2,5,8],
                     [0,4,8], [2,4,6]
                     ]
-
+                    
                     for(let line of lines) {
                         if(squares[line[0]] && squares[line[0]] == squares[line[1]] && squares[line[1]] == squares[line[2]]) {
-                            let element = document.getElementById(`S${line[0]}`);
-                            element.style.color = "yellow";
-                            element = document.getElementById(`S${line[1]}`);
-                            element.style.color = "yellow";
-                            element = document.getElementById(`S${line[2]}`);
-                            element.style.color = "yellow";
+                            let element;
+                            for(let num of line) {
+                                element = document.getElementById(`S${num}`);
+                                element.style.color = "yellow";
+                            }
                             return squares[line[0]];
-                        }
-                            
+                        }        
                     }
+                    
                     return null;
                 }
-                
-                const [squares,setSquares] = useState(Array(9).fill(null));
-                const [xIsNext, setXIsNext] = useState((Math.random() > 0.5 ? true : false));
-                let winner = calculateWinner();
 
                 function handleClick(i){
-                    let winner = calculateWinner();
-                    if (winner || squares[i])
+
+                    if (calculateWinner() || squares[i])
                         return;
                     let squareSet = squares.slice();
                     if (xIsNext)
                         squareSet[i] = "X";
                     else
                         squareSet[i] = "O";
-                    setSquares(squareSet);
-                    setXIsNext(!xIsNext);
+                    onPlay(squareSet);
                 }
+
+                let winner = calculateWinner();
 
                 if (winner) {
                     status = `${winner} is the winner!`;
                 }
+                else if (current == 9)
+                    status = "Game over!";
                 else if (xIsNext)
                     status = "It's X's turn";
                 else
@@ -86,34 +76,85 @@
 
                 return (
                     <>
-                        <div className="status">{status}</div>
-                        <div className="line-square">
-                            <Square id="S0" content={squares[0]} onSquareClick={() => {handleClick(0)}} />
-                            <Square id="S1" content={squares[1]} onSquareClick={() => {handleClick(1)}} />
-                            <Square id="S2" content={squares[2]} onSquareClick={() => {handleClick(2)}} />
-                        </div>
-                        <div className="line-square">
-                            <Square id="S3" content={squares[3]} onSquareClick={() => {handleClick(3)}} />
-                            <Square id="S4" content={squares[4]} onSquareClick={() => {handleClick(4)}} />
-                            <Square id="S5" content={squares[5]} onSquareClick={() => {handleClick(5)}} />
-                        </div>
-                        <div className="line-square">
-                            <Square id="S6" content={squares[6]} onSquareClick={() => {handleClick(6)}} />
-                            <Square id="S7" content={squares[7]} onSquareClick={() => {handleClick(7)}} />
-                            <Square id="S8" content={squares[8]} onSquareClick={() => {handleClick(8)}} />
+                        <div className="wrapper">
+                            <div className="status">{status}</div>
+                            <div className="line-square">
+                                <Square id="S0" content={squares[0]} onSquareClick={() => {handleClick(0)}} />
+                                <Square id="S1" content={squares[1]} onSquareClick={() => {handleClick(1)}} />
+                                <Square id="S2" content={squares[2]} onSquareClick={() => {handleClick(2)}} />
+                            </div>
+                            <div className="line-square">
+                                <Square id="S3" content={squares[3]} onSquareClick={() => {handleClick(3)}} />
+                                <Square id="S4" content={squares[4]} onSquareClick={() => {handleClick(4)}} />
+                                <Square id="S5" content={squares[5]} onSquareClick={() => {handleClick(5)}} />
+                            </div>
+                            <div className="line-square">
+                                <Square id="S6" content={squares[6]} onSquareClick={() => {handleClick(6)}} />
+                                <Square id="S7" content={squares[7]} onSquareClick={() => {handleClick(7)}} />
+                                <Square id="S8" content={squares[8]} onSquareClick={() => {handleClick(8)}} />
+                            </div>
                         </div>
                     </>
                 )
             }
 
             export default function App () {
+                const [history, setHistory] = useState([Array(9).fill(null)]);
+                const [xIsNext, setXIsNext] = useState((Math.random() > 0.5 ? true : false));
+                const [whoFirst, setWhoFirst] = useState(xIsNext);
+                const [currentMove, setCurrentMove] = useState(0);
+                const [painted, setPainted] = useState(false);
+                const [linePainted, setLinePainted] = useState(Array(3).fill(0));
+                const currentSquare = history[currentMove];
+                
+
+                function handleplay(nextSquares) {
+                    setHistory([...history, nextSquares]);
+                    setXIsNext(!xIsNext);
+                    setCurrentMove(currentMove+1);
+                }
+
+                function jumpTo(currentM) {
+                    setHistory(history.slice(0,currentM+1));
+                    setXIsNext((whoFirst? currentM % 2 == 0 : currentM % 2 != 0));
+                    setCurrentMove(currentM);
+                    discolor();
+                }
+
+                function discolor() {
+                    let element;
+                    for(let i = 0; i < 9; i++) {
+                        element = document.getElementById(`S${i}`);
+                        element.style.color = "gainsboro";
+                    }
+                }
+
+                const items = history.map((element, index) => {
+                    let description;
+                    if (index != 0) {
+                        description = "Go to move #"+index;
+                    } else {
+                        description = "Go to game start";
+                    }
+                    return (
+                        <li key={index}>
+                            <button onClick={()=> {jumpTo(index)}}>{description}</button>
+                        </li>
+                    )
+                })
 
                 return (
-                    <div className="main">
-                        <h1>Tic Tac Toe</h1>
-                        <Board className="board" />
-                        <p>Created by <a href="https://www.github.com/josueamaral15">Josué Amaral</a></p>
-                    </div>
+                    
+                        <div className="main">
+                            <div className="list-wrapper">
+                                <h1>Tic Tac Toe</h1>
+                                <Board squares={currentSquare} xIsNext={xIsNext} onPlay={handleplay} current={currentMove} />
+                                <p>Created by <a href="https://www.github.com/josueamaral15">Josué Amaral</a></p>
+                            </div>
+                            <ul className="list">{items}</ul>
+                        </div>
+                        
+                    
                 )
             }
 
@@ -125,6 +166,23 @@
             );
         </script>
         <style>
+
+            *{
+                box-sizing: border-box;
+            }
+
+            root {
+                font-size: 62.5%;
+            }
+
+            html {
+                scroll-behavior: smooth;
+                object-position: 0 2rem;
+            }
+
+            h1 {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+            }
 
             .square {
                 width : 100px;
@@ -149,9 +207,11 @@
             }
 
             p {
-                font-size: small;
+                font-size: large;
                 font-weight: bold;
-                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                font-family:'Alex Brush';
+                text-shadow : 5px 5px 1px gray;
+                color : darkSlateGray;
             }
 
             .board > :not(:last-child) {
@@ -160,8 +220,9 @@
 
             .main{
                 display:flex;
-                flex-direction: column;
+                flex-direction: row;
                 align-items: center;
+                justify-content: center;
             }
 
             .line-square {
@@ -172,6 +233,28 @@
 
             .status {
                 padding : 1rem;
+                /*font-weight : bold;*/
+                font-family: Alkatra;
+                font-size : 22px;
+            }
+            .wrapper {
+                display:flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .list {
+                list-style-type: none;   
+            }
+
+            .list li {
+                margin-bottom:0.25rem;
+            }
+
+            .list-wrapper {
+                display:flex;
+                flex-direction: column;
+                align-items: center;
             }
         </style>
     </head>
