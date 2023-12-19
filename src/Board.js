@@ -37,7 +37,7 @@ export default function Board({squares, xIsNext, onPlay, current}) {
     }
 
     let winner = calculateWinner();
-
+    let status = "";
     if (winner) {
         status = `${winner} is the winner!`;
     }
